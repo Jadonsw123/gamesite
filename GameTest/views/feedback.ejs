@@ -1,0 +1,11 @@
+<%- include("./partials/head.ejs") %>
+<h1>Feedback</h1>
+
+<form action='/feedback' method='POST'>
+	<input type="text" placeholder="description" name='description' required="">
+	<div>
+		<textarea  placeholder="bug" name='bug' required="" cols="50"></textarea>
+	</div>
+	<button>Submit!</button>
+</form>
+<p><%= message %></p>

@@ -3,42 +3,104 @@ var animate = window.requestAnimationFrame ||
   window.mozRequestAnimationFrame ||
   function(callback) { window.setTimeout(callback, 1000/60) };
 
-let canvas = document.getElementById("gameCanvas");
-let width = canvas.width;
-let height = canvas.height;
-var context = canvas.getContext('2d');
-$(".canvas").css("padding-left", $("body").width()/2 - gameCanvas.width + "px");
+
+
+
+
+
+
+
+let width = 600;
+let height = 600;
+$("canvas").attr("height", height);
+$("canvas").attr("width", width);
+
+
+
+loadGlobalLeaderboard({level:true, score:true});
+getScore({score:true, level:true});
+
+setUpCanvas();
+
+
+
+
+// $(".canvas").css("padding-left", $("body").width()/2 - gameCanvas.width + "px");
+
 const backgroundC = "black";
 const paddleC = "green";
 const ballC = "white";
-
+// $(".canvas").css('width', canvas.width);
 
 let score = 0;
-let lives = 3;
-let blockWidth = 30;
-let blockHeight = 15;
+let lives = 1;
+let blockWidth = 100;
+let blockHeight = 30;
 let ballRadius = 5;
-let gap = 5;
+let gapX = 0;
+let gapY = 0;
+let startBlocksY = 5;
+let endBlocksY = 15;
+let startBlocksX = 1;
+let endBlocksX = width / blockWidth - (width / blockWidth * 5 / blockWidth) - 1;
+
 let level = 1;
 
 let player;
 let balls = [];
 
 let paddles = [];
+document.getElementById('score2').innerHTML = score;
+document.getElementById('score1').innerHTML = level;
 populate();
+
+
+
+
+// let is_mobile = navigator.userAgent.indexOf('Mobile') !== -1;
+// if(is_mobile) $(".main-content").css('flex-direction', 'column');
+// if(is_mobile) $("#gameCanvas").css('width', window.innerWidth);
+// if(!is_mobile)$("canvas").css('height', window.innerHeight * 3/4);
+
+
+document.getElementById("reset").addEventListener("click", resetGame);
+
+var keysDown = {};
+
+window.addEventListener("keydown", function(event) {
+  keysDown[event.keyCode] = true;
+});
+
+window.addEventListener("keyup", function(event) {
+  delete keysDown[event.keyCode];
+});
+
+window.addEventListener("touchstart", function (event) {
+    if (event.touches[0].clientX > $(window).width() / 2) keysDown[39] = true;
+    if (event.touches[0].clientX <= $(window).width() / 2) keysDown[37] = true;
+
+});
+window.addEventListener("touchend", function (event) {
+    delete keysDown[37];
+    delete keysDown[39];
+
+});
 
 
 
 function populate(){
   player = new Player();
+  balls = [];
   balls.push(new Ball(player.paddle.x  + player.paddle.width / 2, player.paddle.y - 20));
-    paddles = [];
-    for (let i = 0; i < width / blockWidth - (width / blockWidth * 5 / blockWidth); i++){
-    for(let j = 2; j < height / blockWidth - 5; j++){
-        
-      paddles.push(new Paddle(i * (blockWidth + gap) + 2,j * (blockHeight + 5),blockWidth,blockHeight, getRandomColor()));
-    }
+  paddles = [];
+
+  for (let i = startBlocksX; i < endBlocksX; i++){
+  for(let j = startBlocksY; j < endBlocksY; j++){
+      
+    paddles.push(new Paddle(i * (blockWidth + gapX) + 2,j * (blockHeight + gapY),blockWidth,blockHeight, getRandomColor()));
   }
+  }
+
 }
 
 
@@ -58,8 +120,13 @@ let colors = generateHslaColors(50,100,1.0,9);
 
 
 
-window.onload = function() {
-  animate(step);
+
+
+
+
+window.onload = function () {
+    $('body').toggleClass('disableTouch');
+    animate(step);
 };
 
 var step = function() {
@@ -72,6 +139,9 @@ var step = function() {
     populate();
     score += 10000;
     level++;
+    // $('score1').html(level);
+    document.getElementById('score1').innerHTML = level;
+    document.getElementById('score2').innerHTML = score;
   } 
   update();
   render();
@@ -131,7 +201,7 @@ Ball.prototype.render = function() {
 };
 
 
-camelCaseWordsHello
+
 
 
 
@@ -194,8 +264,8 @@ Ball.prototype.update = function(paddle1, paddle2, k) {
 	// 		this.y_speed = Math.abs(this.y_speed) + 0.5;
 	// 	}
 	// 	if(this.y > 600) {lives--;}
-	// 	document.getElementById('stackerScore').innerHTML = score;
-	// 	document.getElementById('level').innerHTML = lives;
+	// 	document.getElementById('score2').innerHTML = score;
+	// 	document.getElementById('score2').innerHTML = lives;
 	// 	this.x_speed = 0;
 	// 	// this.y_speed = 3;
 	// 	this.x = 200;
@@ -221,7 +291,7 @@ Ball.prototype.update = function(paddle1, paddle2, k) {
         balls.splice(k,1);
         
 
-        document.getElementById('level').innerHTML = lives;
+        document.getElementById('score1').innerHTML = level;
       }
       for(let i = 0; i < paddles.length; i++){
         let remove = false;
@@ -249,7 +319,7 @@ Ball.prototype.update = function(paddle1, paddle2, k) {
           paddles.splice(i,1);
           i--;
           score+= 100;
-            document.getElementById('stackerScore').innerHTML = score;
+            document.getElementById('score2').innerHTML = score;
             addNewBall();
           remove = false;
         }
@@ -268,15 +338,7 @@ Ball.prototype.update = function(paddle1, paddle2, k) {
   	// }
 };
 
-var keysDown = {};
 
-window.addEventListener("keydown", function(event) {
-  keysDown[event.keyCode] = true;
-});
-
-window.addEventListener("keyup", function(event) {
-  delete keysDown[event.keyCode];
-});
 
 Player.prototype.update = function() {
   for(var key in keysDown) {
@@ -314,157 +376,20 @@ Paddle.prototype.move = function(x, y) {
 
 
 
-document.getElementById("reset").addEventListener("click", resetGame);
 
 
-let scoreboard = [];
+
+
 
 function resetGame(){
-	console.log("reset game");
+
 	populate();
 	addScore(score, level);
-  	writeScore();
+  	writeScore({score: true, level: true});
     lives = 3;
     score = 0;
-	document.getElementById('stackerScore').innerHTML = score;
-	document.getElementById('level').innerHTML = lives;
+	document.getElementById('score2').innerHTML = score;
+	document.getElementById('score1').innerHTML = level;
 }
 
 
-
-function addScore(score, level){
-    for(let i = 0; i < scoreboard.length; i++){
-      let oldScore = scoreboard[i].score;
-      if(parseInt(score) > parseInt(oldScore)){
-        scoreboard.splice(i,0,{score:score, level:level});
-        sendScore(score, level);
-        sendTopScore(score, level);
-        if(scoreboard.length > 10) scoreboard.pop();
-        return;
-      }
-    }
-
-
-
-    scoreboard.push({score:score, level:level});
-    if(scoreboard.length <= 10) sendTopScore(score, level);
-    if(scoreboard.length <= 10) sendScore(score, level);
-    if(scoreboard.length > 10) scoreboard.pop();
-  return;
-}
-
-function writeScore(){
-  $(".personal").html("");
-  for(let i = 0; i < scoreboard.length;i++){
-    $(".personal").append("<tr><td>" + (i+1) + "</td><td>" + scoreboard[i].level + "</td><td>" + scoreboard[i].score + "</td></tr>");
-  }
-}
-
-
-
-
-
-function sendScore(score, level){
-  $.post("/games/breakout/scores", {
-    score: score,
-    level: level
-  }, function(){
-    
-    // console.log("It worked")
-  }).fail(function(){
-    console.log("error");
-  });
-  
-}
-
-$.get("/games/breakout/scores",
-  function(data, status){
-    for(let j = 0; j < data.length; j++){
-      addPersonalData(data[j].score, data[j].level);
-    }
-
-    
-     writeScore();
-  }
-  ).fail(function(){
-    console.log("error");
-  });
-
-
-function addPersonalData(score, level){
-    for(let i = 0; i < scoreboard.length; i++){
-      let oldScore = scoreboard[i].score;
-      if(parseInt(score) > parseInt(oldScore)){
-        scoreboard.splice(i,0,{score:score, level:level});
-        if(scoreboard.length > 10) scoreboard.pop();
-        return;
-      }
-    }
-
-
-
-    scoreboard.push({score:score, level:level});
-    if(scoreboard.length > 10) scoreboard.pop();
-  return;
-}
-
-
-
-function loadGlobalLeaderboard(){
-  $.get("/games/breakout/leaderboard",
-  function(data, status){
-    console.log(data);
-    console.log(status);
-    globalScoreBoard = [];
-    if(!(data.board === undefined)){
-      for(let i = 0; i < data.board.length; i++){
-        let ob = data.board[i];
-        addGlobalData(ob.score, ob.level, ob.username);
-      }
-      writeGlobalData();
-    }
-  }
-  ).fail(function(){
-    console.log("error");
-  });
-}
-loadGlobalLeaderboard();
-
-
-let globalScoreBoard = [];
-function writeGlobalData(){
-  console.log(globalScoreBoard);
-  $(".global").html("");
-  for(let i = 0; i < globalScoreBoard.length;i++){
-    $(".global").append("<tr><td>" + (i+1) + "</td><td>" + globalScoreBoard[i].username + "</td><td>" + globalScoreBoard[i].level + "</td><td>" + globalScoreBoard[i].score + "</td></tr>");
-  }
-}
-
-function addGlobalData(score, level, username){
-  for(let i = 0; i < globalScoreBoard.length; i++){
-    let oldScore = globalScoreBoard[i].score;
-    if(parseInt(score) > parseInt(oldScore)){
-      globalScoreBoard.splice(i,0,{score:score, level:level, username: username});
-      if(globalScoreBoard.length > 10) globalScoreBoard.pop();
-      return;
-    }
-  }
-
-    globalScoreBoard.push({score:score, level:level, username: username});
-    if(globalScoreBoard.length > 10) globalScoreBoard.pop();
-}
-
-
-function sendTopScore(score, level){
-  if((globalScoreBoard.length <= 10) || score > globalScoreBoard[-1].score){
-    $.post("/games/breakout/leaderboard", {
-      score: score,
-      level: level
-    }, function(){
-      loadGlobalLeaderboard();
-      console.log('it worked')
-    }).fail(function(){
-      console.log("error");
-    });
-  }
-}

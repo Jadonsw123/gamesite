@@ -1,5 +1,17 @@
-let canvas = document.getElementById("gameCanvas");
-let ctx = canvas.getContext("2d");
+let width = 600;
+let height = 600;
+$("canvas").attr("height", height);
+$("canvas").attr("width", width);
+
+
+$(".tableScore1").css("display", "none");
+$(".scoreLabel1").css("display", "none");
+setUpCanvas();
+
+loadGlobalLeaderboard({score:true});
+getScore({score:true});
+
+
 const background = "black";
 const border = "red";
 let speed = 100;
@@ -8,13 +20,12 @@ const FOOD_COLOR = 'red';
 let score = 0;
 let changingDirection = false;
 let numberToAdd = 0;
+let level = -1;
+// let is_mobile = navigator.userAgent.indexOf('Mobile') !== -1;
 
-
-let scoreboard = [];
+// let scoreboard = [];
 
 let reset = false;
-
-
 
 
 let foodX;
@@ -28,7 +39,7 @@ let snake = [
   {x:120,y:160},
   {x:100,y:160}
 ]
-
+// $(".canvas").css('width', canvas.width);
 
 
 window.addEventListener("keydown", function(e) {
@@ -37,7 +48,24 @@ window.addEventListener("keydown", function(e) {
         e.preventDefault();
     }
 }, false);
+
+
+
+
+
+
+
 document.addEventListener("keydown", changeDirection);
+
+
+
+document.addEventListener('touchstart', handleTouchStart, false);
+document.addEventListener('touchmove', handleTouchMove, false);
+
+// var xDown = null;
+// var yDown = null;
+
+
 
 //////
 
@@ -52,7 +80,7 @@ document.getElementById("reset").addEventListener("click", function(){
 		    {x:100,y:160}
 		  ]
 		  score = 0;
-		  document.getElementById('snakeScore').innerHTML = score;
+		  document.getElementById('score2').innerHTML = score;
 		  createFood();
 		  changingDirection = false;
 		  speed=100;
@@ -130,7 +158,7 @@ function advanceSnake(){
         // Increase score
         score += 100;
         // Display score on screen
-        document.getElementById('snakeScore').innerHTML = score;
+        document.getElementById('score2').innerHTML = score;
         numberToAdd += 3;
         // Generate new food location
         createFood();
@@ -195,27 +223,15 @@ function clearCanvas(){
   ctx.fillRect(0,0,canvas.width,canvas.height );
 }
 
-// function addScore(score){
-//   	for(let i = 0; i < scoreboard.length; i++){
-//   		let oldScore = scoreboard[i];
-//   		if(parseInt(score) > parseInt(oldScore)){
-//   			scoreboard.splice(i,0,score);
-//   			if(scoreboard.length > 10) scoreboard.pop();
-//   			return;
-//   		}
-//   	}
-//   	scoreboard.push(score);
-//   	if(scoreboard.length > 10) scoreboard.pop();
-// 	return;
-// }
+
 
 
 
 function main(){
   if(didGameEnd()){
-  	let score = $("#snakeScore")[0].innerHTML;
-  	addScore(score);
-  	writeScore();
+  	// let score = $("#score2")[0].innerHTML;
+  	addScore(score, level);
+    writeScore({ score: true });
   	return;
   } 
   setTimeout(function onTick(){
@@ -236,143 +252,3 @@ function main(){
   
 }
 //
-
-function addScore(score, level){
-    for(let i = 0; i < scoreboard.length; i++){
-      let oldScore = scoreboard[i].score;
-      if(parseInt(score) > parseInt(oldScore)){
-        scoreboard.splice(i,0,{score:score});
-        sendScore(score);
-        sendTopScore(score, level);
-        if(scoreboard.length > 10) scoreboard.pop();
-        return;
-      }
-    }
-
-
-
-    scoreboard.push({score:score});
-    if(scoreboard.length === 1) sendTopScore(score, level);
-    if(scoreboard.length <= 10) sendScore(score, level);
-    if(scoreboard.length > 10) scoreboard.pop();
-  return;
-}
-
-function writeScore(){
-  $(".personal").html("");
-  for(let i = 0; i < scoreboard.length;i++){
-    $(".personal").append("<tr><td>" + (i+1) + "</td><td>" + scoreboard[i].score + "</td></tr>");
-  }
-}
-
-
-function sendScore(score){
-  $.post("/games/snake/scores", {
-    score: score
-  }).fail(function(){
-    console.log("error");
-  });
-}
-
-$.get("/games/snake/scores",
-  function(data, status){
-    console.log(data);
-    console.log(status);
-    for(let j = 0; j < data.length; j++){
-      addPersonalData(data[j].score);
-    }
-
-    
-     writeScore();
-  }
-  ).fail(function(){
-    console.log("error");
-  });
-
-
-function addPersonalData(score){
-    for(let i = 0; i < scoreboard.length; i++){
-      let oldScore = scoreboard[i].score;
-      if(parseInt(score) > parseInt(oldScore)){
-        scoreboard.splice(i,0,{score:score});
-        if(scoreboard.length > 10) scoreboard.pop();
-        return;
-      }
-    }
-
-
-
-    scoreboard.push({score:score});
-    if(scoreboard.length > 10) scoreboard.pop();
-  return;
-}
-
-
-
-$(".canvas").css("padding-left", $("body").width()/2 - gameCanvas.width + "px");
-
-
-
-
-
-
-function loadGlobalLeaderboard(){
-  $.get("/games/snake/leaderboard",
-  function(data, status){
-    console.log(data);
-    console.log(status);
-    globalScoreBoard = [];
-    if(!(data.board === undefined)){
-      for(let i = 0; i < data.board.length; i++){
-        let ob = data.board[i];
-        addGlobalData(ob.score, ob.level, ob.username);
-      }
-    }
-    writeGlobalData();
-  }
-  ).fail(function(){
-    console.log("error");
-  });
-}
-loadGlobalLeaderboard();
-
-
-let globalScoreBoard = [];
-function writeGlobalData(){
-  console.log(globalScoreBoard);
-  $(".global").html("");
-  for(let i = 0; i < globalScoreBoard.length;i++){
-    $(".global").append("<tr><td>" + (i+1) + "</td><td>" + globalScoreBoard[i].username + "</td><td>" + globalScoreBoard[i].score + "</td></tr>");
-  }
-}
-
-function addGlobalData(score, level, username){
-  for(let i = 0; i < globalScoreBoard.length; i++){
-    let oldScore = globalScoreBoard[i].score;
-    if(parseInt(score) > parseInt(oldScore)){
-      globalScoreBoard.splice(i,0,{score:score, level:level, username: username});
-      if(globalScoreBoard.length > 10) globalScoreBoard.pop();
-      return;
-    }
-  }
-
-    globalScoreBoard.push({score:score, level:level, username: username});
-
-    if(globalScoreBoard.length > 10) globalScoreBoard.pop();
-}
-
-
-function sendTopScore(score, level){
-  level = 0;
-  if((globalScoreBoard.length <= 10) || score > globalScoreBoard[-1].score){
-  $.post("/games/snake/leaderboard", {
-    score: score,
-    level: level
-  }, function(){
-    loadGlobalLeaderboard();
-    console.log('it worked')
-  }).fail(function(){
-    console.log("error");
-  });
-}
-}

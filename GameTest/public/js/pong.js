@@ -3,25 +3,36 @@ var animate = window.requestAnimationFrame ||
   window.mozRequestAnimationFrame ||
   function(callback) { window.setTimeout(callback, 1000/60) };
 
-let canvas = document.getElementById("gameCanvas");
-let width = canvas.width;
-let height = canvas.height;
-var context = canvas.getContext('2d');
-$(".canvas").css("padding-left", $("body").width()/2 - gameCanvas.width + "px");
+
+let width = 400;
+let height = 600;
+$("canvas").attr("height", height);
+$("canvas").attr("width", width);
+
+
+setUpCanvas();
+
+
+$(".tableScore1").css("display", "none");
+$(".scoreLabel1").css("display", "none");
+loadGlobalLeaderboard({score:true});
+getScore({score:true});
+// $(".canvas").css("padding-left", $("body").width()/2 - gameCanvas.width + "px");
 const backgroundC = "black";
 const paddleC = "green";
 const ballC = "white";
 
-
 let score = 0;
 let lives = 3;
+let level = -1;
+// let is_mobile = navigator.userAgent.indexOf('Mobile') !== -1;
+
+// $(".canvas").css('width', canvas.width);
+// $('body').toggleClass('disableTouch');
 
 
+window.onload = function () {
 
-
-
-
-window.onload = function() {
   animate(step);
 };
 
@@ -124,8 +135,8 @@ Ball.prototype.update = function(paddle1, paddle2) {
 			this.y_speed = Math.abs(this.y_speed) + 0.5;
 		}
 		if(this.y > 600) {lives--;}
-		document.getElementById('stackerScore').innerHTML = score;
-		document.getElementById('level').innerHTML = lives;
+		document.getElementById('score2').innerHTML = score;
+		document.getElementById('score1').innerHTML = lives;
 		this.x_speed = 0;
 		// this.y_speed = 3;
 		this.x = 200;
@@ -159,6 +170,22 @@ window.addEventListener("keydown", function(event) {
 window.addEventListener("keyup", function(event) {
   delete keysDown[event.keyCode];
 });
+
+
+window.addEventListener("touchstart", function (event) {
+    //alert($(window).width());
+    //alert(event.touches[0].screenX)
+    if (event.touches[0].screenX > $(window).width() / 2) keysDown[39] = true;
+    if (event.touches[0].screenX <= $(window).width() / 2) keysDown[37] = true;
+    
+});
+window.addEventListener("touchend", function (event) {
+    delete keysDown[37];
+    delete keysDown[39];
+    
+});
+
+
 
 Player.prototype.update = function() {
   for(var key in keysDown) {
@@ -210,156 +237,18 @@ Computer.prototype.update = function(ball) {
 document.getElementById("reset").addEventListener("click", resetGame);
 
 
-let scoreboard = [];
+
 
 function resetGame(){
-	console.log("reset game");
+
 	player = new Player();
 	computer = new Computer();
 	ball = new Ball(200, 300);
-	addScore(score, lives);
-  	writeScore();
+	addScore(score, level);
+	writeScore({ score: true});
     lives = 3;
     score = 0;
-	document.getElementById('stackerScore').innerHTML = score;
-	document.getElementById('level').innerHTML = lives;
+	document.getElementById('score2').innerHTML = score;
+	document.getElementById('score1').innerHTML = lives;
 }
 
-
-
-function addScore(score, level){
-    for(let i = 0; i < scoreboard.length; i++){
-      let oldScore = scoreboard[i].score;
-      if(parseInt(score) > parseInt(oldScore)){
-        scoreboard.splice(i,0,{score:score, level:level});
-        sendScore(score, level);
-        sendTopScore(score, level);
-        if(scoreboard.length > 10) scoreboard.pop();
-        return;
-      }
-    }
-
-
-
-    scoreboard.push({score:score, level:level});
-    if(scoreboard.length <= 10) sendTopScore(score, level);
-    if(scoreboard.length <= 10) sendScore(score, level);
-    if(scoreboard.length > 10) scoreboard.pop();
-  return;
-}
-
-function writeScore(){
-  $(".personal").html("");
-  for(let i = 0; i < scoreboard.length;i++){
-    $(".personal").append("<tr><td>" + (i+1) + "</td><td>" + scoreboard[i].level + "</td><td>" + scoreboard[i].score + "</td></tr>");
-  }
-}
-
-
-
-
-
-function sendScore(score, level){
-  $.post("/games/pong/scores", {
-    score: score,
-    level: level
-  }, function(){
-    
-    // console.log("It worked")
-  }).fail(function(){
-    console.log("error");
-  });
-  
-}
-
-$.get("/games/pong/scores",
-  function(data, status){
-    for(let j = 0; j < data.length; j++){
-      addPersonalData(data[j].score, data[j].level);
-    }
-
-    
-     writeScore();
-  }
-  ).fail(function(){
-    console.log("error");
-  });
-
-
-function addPersonalData(score, level){
-    for(let i = 0; i < scoreboard.length; i++){
-      let oldScore = scoreboard[i].score;
-      if(parseInt(score) > parseInt(oldScore)){
-        scoreboard.splice(i,0,{score:score, level:level});
-        if(scoreboard.length > 10) scoreboard.pop();
-        return;
-      }
-    }
-
-
-
-    scoreboard.push({score:score, level:level});
-    if(scoreboard.length > 10) scoreboard.pop();
-  return;
-}
-
-
-
-function loadGlobalLeaderboard(){
-  $.get("/games/pong/leaderboard",
-  function(data, status){
-    console.log(data);
-    console.log(status);
-    globalScoreBoard = [];
-    if(!(data.board === undefined)){
-      for(let i = 0; i < data.board.length; i++){
-        let ob = data.board[i];
-        addGlobalData(ob.score, ob.level, ob.username);
-      }
-      writeGlobalData();
-    }
-  }
-  ).fail(function(){
-    console.log("error");
-  });
-}
-loadGlobalLeaderboard();
-
-
-let globalScoreBoard = [];
-function writeGlobalData(){
-  console.log(globalScoreBoard);
-  $(".global").html("");
-  for(let i = 0; i < globalScoreBoard.length;i++){
-    $(".global").append("<tr><td>" + (i+1) + "</td><td>" + globalScoreBoard[i].username + "</td><td>" + globalScoreBoard[i].level + "</td><td>" + globalScoreBoard[i].score + "</td></tr>");
-  }
-}
-
-function addGlobalData(score, level, username){
-  for(let i = 0; i < globalScoreBoard.length; i++){
-    let oldScore = globalScoreBoard[i].score;
-    if(parseInt(score) > parseInt(oldScore)){
-      globalScoreBoard.splice(i,0,{score:score, level:level, username: username});
-      if(globalScoreBoard.length > 10) globalScoreBoard.pop();
-      return;
-    }
-  }
-
-    globalScoreBoard.push({score:score, level:level, username: username});
-    if(globalScoreBoard.length > 10) globalScoreBoard.pop();
-}
-
-
-function sendTopScore(score, level){
-  if((globalScoreBoard.length <= 10) || score > globalScoreBoard[-1].score){
-    $.post("/games/pong/leaderboard", {
-      score: score,
-      level: level
-    }, function(){
-      loadGlobalLeaderboard();
-      console.log('it worked')
-    }).fail(function(){
-      console.log("error");
-    });
-  }
-}

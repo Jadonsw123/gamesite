@@ -1,4 +1,5 @@
 let express = require("express"),
+	favicon = require("serve-favicon"),
 	app = express(),
 	path = require("path"),
 	bodyParser = require('body-parser'),
@@ -19,6 +20,7 @@ var session = require('express-session');
 
 const os = require("os");
 var networkInterfaces = os.networkInterfaces();
+const fs = require('fs');
 
 var http = require("http");
 var https = require("https");
@@ -32,6 +34,10 @@ mongoose.connect('mongodb://127.0.0.1:27017/gameWebsite', { useNewUrlParser: tru
 mongoose.set('useFindAndModify', false);
 let count = 0;
 
+
+app.use(favicon(path.join(__dirname, 'public', 'bird.png')));
+
+
 app.use(session({
 	secret: "Adarsh refuses to learn anything!",
 	resave: false,
@@ -42,6 +48,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({extended: true}));
+
 
 
 
@@ -158,26 +165,55 @@ app.get("/logout", function(req, res){
 
 app.get("/games/:id", function(req, res){
 	count++;
-	res.render("games/" + req.params.id, {currentUser: req.user});
+	// res.render("games/" + req.params.id, {currentUser: req.user});
+	res.render("games/game", {currentUser: req.user});
 	logReq(req, req.url);
 });
 
 
 
 
+
+app.get("/feedback", function(req, res){
+	res.render('feedback', {currentUser: req.user, message: req.flash('error')[0]});
+	logReq(req, req.url);
+})
+
+app.post("/feedback", async function(req, res){
+	try{
+		let data;
+	if (req.isAuthenticated()) {
+		data = "\n " + req.user.username + "\n" + req.body.description + "\n" + req.body.bug;
+		
+	}else{
+		data = "\n " + req.connection.remoteAddress + "\n" + req.body.description + "\n" + req.body.bug;
+
+	}
+	await fs.appendFile("feedback.txt", data, function(err){console.log(err)});
+	} catch(err){
+	console.log(err);
+	}
+	res.redirect("/");
+});
+
+//These are the overall leaderboard of each game
 //req.body contains a score
 app.post("/games/:id/leaderboard", async function(req, res){
 	try{
-		if(req.isAuthenticated()){
+		if (req.isAuthenticated()) {
+
+			let notMade = false;
+
 			let allBoards = (await AllBoards.find({name: "First Board"}))[0];
 			// console.log(allBoards.boards);
-			if(allBoards.boards[req.params.id] === undefined){
+			if (allBoards.boards[req.params.id] === undefined) {
+				notMade = true;
 				let newLeaderboard = new Leaderboard({
 					game: req.params.id,
 					board: {}
 				});
 				newLeaderboard = await newLeaderboard.save();
-				// console.log(newLeaderboard);
+				 console.log(newLeaderboard);
 				let boards = allBoards.boards;
 				boards[req.params.id] = newLeaderboard;
 				await AllBoards.findByIdAndUpdate(allBoards._id, {boards: boards});
@@ -192,8 +228,11 @@ app.post("/games/:id/leaderboard", async function(req, res){
 
 			let scores = leaderboard.board;
 			scores.push(newScore);
+			if (notMade) {
+				scores.shift();
+            }
 			leaderboard = await Leaderboard.findByIdAndUpdate(leaderboard._id, {board: scores});
-			// console.log("Final Leaderboard: " + leaderboard)
+			 // console.log("Final Leaderboard: " + leaderboard)
 			
 
 
@@ -206,7 +245,7 @@ app.post("/games/:id/leaderboard", async function(req, res){
 
 app.get("/games/:id/leaderboard", async function(req, res){
 	try{
-		let allBoards = (await AllBoards.find({name: "First Board"}))[0];
+		//let allBoards = (await AllBoards.find({name: "First Board"}))[0];
 		let leaderboard = (await Leaderboard.find({game: req.params.id}))[0];
 		res.send(leaderboard);
 	} catch(err){
@@ -214,7 +253,7 @@ app.get("/games/:id/leaderboard", async function(req, res){
 	}
 });
 
-
+//These are the personal scores of the players
 app.post("/games/:id/scores", async function(req, res){
 	try{
 		if(req.isAuthenticated()){
@@ -265,6 +304,7 @@ app.get("/", function(req, res){
 
 
 
+
 app.get("*", function(req, res){
 	res.redirect("/games");
 	logReq(req, req.url);
@@ -280,21 +320,30 @@ app.get("*", function(req, res){
 // app.listen(4999, "192.168.0.25", function(){
 // 	console.log("It started!");
 // });
-app.listen(port, /*networkInterfaces['Wi-Fi'].find(element => element.family === "IPv4").address,*/ function(){
+app.listen(port, process.env.IP || networkInterfaces['Wi-Fi'].find(element => element.family === "IPv4").address, function(){
 	console.log(networkInterfaces['Wi-Fi'].find(element => element.family === "IPv4").address);
 	console.log("It started!");
 });
 
 
+//app.listen(port/*, networkInterfaces['Wi-Fi'].find(element => element.family === "IPv4").address*/, function () {
+//	console.log(networkInterfaces['Wi-Fi'].find(element => element.family === "IPv4").address);
+//	console.log("It started!");
+//});
+
+
 function logReq(req, place){
 	let person = "UNKNOWN";
+	console.log(req.connection.remoteAddress);
 	if(req.connection.remoteAddress == '75.49.123.188') person = 'Danny';
 	else if(req.connection.remoteAddress == '70.114.133.114') person = 'Me';
 	else if(req.connection.remoteAddress == '70.114.148.181') person = 'Adarsh';
+	else if(req.connection.remoteAddress == '24.27.49.87') person = 'Adarsh';
 	else if(req.isAuthenticated()){
 		person = req.user.username;
 	}
-	console.log(Date() + " " + count + ": IP ADDRESS " + req.connection.remoteAddress + " Entered " + place + ": " + person);
+	// console.log(Date() + " " + count + ": IP ADDRESS " + req.connection.remoteAddress + " Entered " + place + ": " + person);
+	console.log(`${Date()} ${count}: IP ADDRESS ${req.connection.remoteAddress} Entered ${place}: ${person}`);
 
 }
 

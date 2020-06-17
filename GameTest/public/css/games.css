@@ -1,49 +1,57 @@
 canvas{
   border:red 4px solid;
+
 }
 .canvas {
-  width:50%;
-
+  width:auto;
+  align-self:center;
 }
 
 .main-content{
   display:flex;
   flex-direction:row;
   flex-wrap:wrap;
-  align-items: center;
+  align-items: flex-start;
   align-content:center;
+
 }
 
 #topbar {
   margin: 0 10% 0 40%;
   text-align: center;
-  font-size: 5em;
+  font-size: 4em;
   font-family: 'Antic Slab', serif;
 }
-#level {
+#score1 {
   display: inline-block;
 
 }
-#stackerScore {
+#score2 {
   display: inline-block;
 }
-#snakeScore {
+/*#score1 {
   margin: 0 50%;
   text-align: center;
   font-size: 5em;
   font-family: 'Antic Slab', serif;
-}
+}*/
 button{
   flex-basis:100%;
-  width:5ems;
+/*  width:5ems;*/
   text-align: center;
+
   
 }
 
 table{
   width:15em;
-  align-self: stretch;
+  align-self: flex-start;
   text-align: center;
+
+}
+
+#global{
+  float:left;
 }
 
 th{
@@ -60,7 +68,7 @@ p{
   display:inline;
 }
 #ghost {
-  align-self: space-around;
+  align-self: center;
   text-align: center;
   width:100%;
   display:inline-block;
@@ -70,4 +78,23 @@ p{
 
   text-align: center;
   color: white;
+}
+
+.disableTouch {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tables {
+    align-self: center;
+}
+
+.btn {
+    display: block;
+    width:400px;
 }

@@ -338,9 +338,9 @@ function logReq(req, place){
 	if(req.connection.remoteAddress == '75.49.123.188') person = 'Danny';
 	else if(req.connection.remoteAddress == '70.114.133.114') person = 'Me';
 	else if(req.connection.remoteAddress == '70.114.148.181') person = 'Adarsh';
-	else if(req.connection.remoteAddress == '24.27.49.87') person = 'Adarsh';
-	else if(req.isAuthenticated()){
-		person = req.user.username;
+	else if(req.connection.remoteAddress == '24.27.49.87') person = 'Chris';
+	if(req.isAuthenticated()){
+		person += " as " + req.user.username;
 	}
 	// console.log(Date() + " " + count + ": IP ADDRESS " + req.connection.remoteAddress + " Entered " + place + ": " + person);
 	console.log(`${Date()} ${count}: IP ADDRESS ${req.connection.remoteAddress} Entered ${place}: ${person}`);

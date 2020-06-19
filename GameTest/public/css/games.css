@@ -98,3 +98,27 @@ p{
     display: block;
     width:400px;
 }
+
+
+.disable {
+  -webkit-user-select: none; 
+  -webkit-touch-callout: none; 
+  -moz-user-select: none; 
+  -ms-user-select: none; 
+  user-select: none;    
+}
+
+.enable {
+  -webkit-user-select: inherit; 
+  -webkit-touch-callout: inherit; 
+  -moz-user-select: inherit; 
+  -ms-user-select: inherit; 
+  user-select: inherit; 
+}
+
+.fixed-div {
+    position: fixed;
+    top: 1em;
+    left: 45%;
+    width: auto;
+}

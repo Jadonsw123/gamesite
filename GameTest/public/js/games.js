@@ -220,7 +220,6 @@ t.attr("src", window.location.href.substring(0,index) + "js/" + window.location.
 let is_mobile = navigator.userAgent.indexOf('Mobile') !== -1;
 
 function setUpCanvas(){
-  is_mobile = navigator.userAgent.indexOf('Mobile') !== -1;
 
 	if(is_mobile) $(".main-content").css('flex-direction', 'column');
 	if(is_mobile){
@@ -229,7 +228,6 @@ function setUpCanvas(){
 		actualWidth = window.innerWidth;
 	} 
 	if(!is_mobile){
-    $("body").attr("onresize", "setUpCanvas()");
 		$("canvas").css('height', window.innerHeight * 3/4);
 		actualheight = window.innerheight * 3/4;
 	}
@@ -246,10 +244,9 @@ function setUpCanvas(){
   if(is_mobile) $("#personal").css("float", "left");
 
 	if(is_mobile){
-    $('#topbar').css("margin", 'auto');
-    $("body").toggleClass('disable');
+
     //add button in top right to lock screen
-    $('#topbar').after('<button id="scroll-lock" class="btn btn-primary enable fixed-div" style="margin:auto;">Scroll Lock</button>');
+    $('#topbar').after('<button id="scroll-lock" class="btn btn-primary" style="margin:auto;">Scroll Lock</button>');
     document.getElementById("scroll-lock").addEventListener("click", function(){
       if(toggledScroll){
         document.querySelector('body').style.overflow = '';

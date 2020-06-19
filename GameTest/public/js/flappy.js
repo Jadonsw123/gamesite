@@ -35,34 +35,25 @@ let gap;
 let pipes;
 let countPipes = 0;
 
-let backGroundX = 0;
-let foreGroundX = 0;
 
-
-let bird1 = new Image();
-let bird2 = new Image();
-let bird3 = new Image();
-let bird4 = new Image();
+let bird = new Image();
 let pipeNorth = new Image();
 let pipeSouth = new Image();
 let backGround = new Image();
 let foreGround = new Image();
 let fancyPipeNorth = new Image();
 let fancyPipeSouth = new Image();
-bird1.src = "../images/flappy/bird.png";
-bird2.src = "../images/flappy/bird2.png";
-bird3.src = "../images/flappy/bird3.png";
-bird4.src = "../images/flappy/bird4.png";
-pipeNorth.src = "../images/flappy/pipeNorth.png";
-pipeSouth.src = "../images/flappy/pipeSouth.png";
-backGround.src = "../images/flappy/bg.png";
-foreGround.src = "../images/flappy/fg.png";
-fancyPipeNorth.src = "../images/flappy/fancyPipeNorth.png";
-fancyPipeSouth.src = "../images/flappy/fancyPipeSouth.png";
+bird.src = "../images/bird.png";
+pipeNorth.src = "../images/pipeNorth.png";
+pipeSouth.src = "../images/pipeSouth.png";
+backGround.src = "../images/bg.png";
+foreGround.src = "../images/fg.png";
+fancyPipeNorth.src = "../images/fancyPipeNorth.png";
+fancyPipeSouth.src = "../images/fancyPipeSouth.png";
 
 let keysDown = {};
 window.addEventListener("keydown", function(event) {
- 	keysDown[event.keyCode] = true;
+  keysDown[event.keyCode] = true;
 });
 
 window.addEventListener("touchstart", function (event) {
@@ -74,7 +65,7 @@ window.addEventListener("touchend", function (event) {
 });
 
 window.addEventListener("keyup", function(event) {
-	delete keysDown[event.keyCode];
+  delete keysDown[event.keyCode];
 });
 		
 		
@@ -87,44 +78,36 @@ class Bird {
 		this.dy = dy;
 		this.width = width;
 		this.height = height;
-		this.image = image[0];
-		this.images = image;
+		this.image = image;
 		this.color = color;
 		this.isJumping = false;
 		this.drag = 0.99;
 		this.onGround = false;
 		this.angle = 0;
-		this.tick = 0;
-		this.renderDelay = 5;
-		this.diffImg = 1;
 		if(this.image){
-			this.width = this.image.width;
-			this.height = this.image.height;
+			this.width = image.width;
+			this.height = image.height;
 		}	
 	}
 	render(){
 		if(this.image){
-			if(this.tick > this.renderDelay * (this.images.length) -2) this.diffImg = -1;
-			if(this.tick <= 0) {this.diffImg = 1; this.tick = 0;}
-			this.tick += this.diffImg;
-			// if(this.tick % this.renderDelay === 0) this.tick /= this.renderDelay
-			// console.log(this.tick , this.renderDelay, this.diffImg);
-			this.image = this.images[Math.floor(this.tick / this.renderDelay)];
-			// this.image = this.images[2];
 
 
 
-			// Save the current context
+
+
+
+			// Save the current context  
 			context.save();
-			// Translate to the center point of our image
+			// Translate to the center point of our image  
 			context.translate(this.x + this.image.width / 2, this.y + this.image.height / 2);
-			// Perform the rotation
+			// Perform the rotation  
 			context.rotate(DegToRad(this.angle));
-			// Translate back to the top left of our bird
+			// Translate back to the top left of our bird  
 			context.translate(-(this.x + this.image.width / 2), -(this.y + this.image.height / 2));
-			// Finally we draw the bird
+			// Finally we draw the bird  
 			context.drawImage(this.image, this.x, this.y);
-			// And restore the context ready for the next loop
+			// And restore the context ready for the next loop  
 			context.restore();
 			if (this.isJumping) this.angle -= 3;
 			else this.angle += 3;
@@ -146,7 +129,7 @@ class Bird {
 
 		} else{
 			context.fillStyle = this.color;
-			context.fillRect(this.x, this.y, this.width, this.height);
+	  		context.fillRect(this.x, this.y, this.width, this.height);
 		}
 	}
 	update(){
@@ -162,14 +145,14 @@ class Bird {
 		}
 		if (this.y + this.height >= height - foreGround.height + 40){ // has hit ground
 			this.y = height - foreGround.height + 40 - this.height;  // place on ground
-			this.dy = 0;			  // stop delta y
-			this.onGround = true;
+		   this.dy = 0;              // stop delta y
+		   this.onGround = true;
 		}else{
-			this.onGround = false;
+		   this.onGround = false;
 		}
 		if (this.y < 0) {
 			this.y = 0;
-		}
+        }
 
 		let topY = this.y;
 		let bottomY = this.y + this.height;
@@ -184,7 +167,7 @@ class Bird {
 			if(bottomY > p2.y && (leftX < p2.x + p2.width && p2.x < rightX )){
 				resetGame();
 			}
-		}
+	    }
 	}
 
 }
@@ -210,7 +193,7 @@ class Pipe {
 			context.drawImage(this.image,this.x,this.y);
 		} else{
 			context.fillStyle = this.color;
-			context.fillRect(this.x, this.y, this.width, this.height);
+	  		context.fillRect(this.x, this.y, this.width, this.height);
 		}
 	}
 	update(){
@@ -236,7 +219,6 @@ class PipePair {
 		}
 		this.pipe1 = new Pipe(width, -(img1.height - this.y), 0, 0, 20, y, img1);
 		this.pipe2 = new Pipe(width, this.y + this.gap, 0, 0, 20, height - this.y - this.gap, img2);
-		this.scoreGiven = false;
 		// this.pipe1.y = 0;
 		// this.pipe1.height = y;
 		// this.pipe2.y = y + gap;
@@ -251,15 +233,10 @@ class PipePair {
 		this.pipe1.update();
 		this.pipe2.update();
 		this.x = this.pipe1.x;
-		if(this.x < b1.x - this.pipe1.width  && !this.scoreGiven){
-			(this.countOfPipes === 0) ? score+=5:score++;
-			document.getElementById('score2').innerHTML = score;
-			this.scoreGiven = true;
-		}
 		if(this.x < 0 - this.pipe1.width){
 		 pipes.shift();
-		 
-
+		 (this.countOfPipes === 0) ? score+=5:score++;
+		 document.getElementById('score2').innerHTML = score;
 		}	
 
 	}
@@ -281,14 +258,13 @@ function setUpGame(){
 	counter = 0;
 	bgDx = -2;
 	gravity = 0.2
-	let birdImages = [bird1, bird2, bird3, bird4];
-	b1 = new Bird(50, 50, 0, 2, 10, 10, birdImages, "yellow");
+	b1 = new Bird(50, 50, 0, 2, 10, 10, bird, "yellow");
 	
 }
 
 
 function randomHeight(){
-	return (Math.random() * (height - 150 - 18 - gap - 130) + 100);
+	return (1 * (height - 150 - 18 - gap - 130) + 100);
 }
 
 
@@ -312,8 +288,7 @@ function update(){
 }
 
 function render(){
-	context.drawImage(backGround, backGroundX, 0);
-	context.drawImage(backGround, backGroundX + width, 0);
+	context.drawImage(backGround, 0, 0);
 	// context.fillStyle = backgroundC;
  // 	context.fillRect(0, 0, width, height);
 	b1.render();
@@ -322,12 +297,8 @@ function render(){
 	for(p of pipes){
 		p.render();
 	}
-	context.drawImage(foreGround, foreGroundX, height - foreGround.height + 40);
-	context.drawImage(foreGround, foreGroundX + width, height - foreGround.height + 40);
-	foreGroundX+=bgDx;
-	backGroundX+=bgDx /3;
-	if(foreGroundX < -width) foreGroundX += width;
-	if(backGroundX < -width) backGroundX += width;
+	context.drawImage(foreGround, 0, height - foreGround.height + 40);
+	 
 
 
 }
@@ -335,7 +306,7 @@ function render(){
 function DegToRad(d) {
 	// Converts degrees to radians  
 	return d * 0.01745;
-}
+}  
 
 function step(){
 	update();
@@ -346,7 +317,7 @@ function step(){
 
 
 window.onload = function() {
-	animate(step);
+  animate(step);
 };
 
 function resetGame(){
@@ -354,8 +325,8 @@ function resetGame(){
 	setUpGame();
 	addScore(score, level);
 	writeScore({ score: true});
-	lives = 0;
-	score = 0;
+    lives = 0;
+    score = 0;
 	document.getElementById('score2').innerHTML = score;
 	// document.getElementById('score2').innerHTML = lives;
 }

@@ -141,7 +141,6 @@ Ball.prototype.update = function(paddle1, paddle2) {
 		// this.y_speed = 3;
 		this.x = 200;
 		this.y = 300;
-    player = new Player();
 	}
 
 	if(top_y > 300) {

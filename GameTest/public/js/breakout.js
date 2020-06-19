@@ -25,12 +25,12 @@ setUpCanvas();
 
 
 
-
+// $(".canvas").css("padding-left", $("body").width()/2 - gameCanvas.width + "px");
 
 const backgroundC = "black";
 const paddleC = "green";
 const ballC = "white";
-
+// $(".canvas").css('width', canvas.width);
 
 let score = 0;
 let lives = 1;
@@ -57,6 +57,10 @@ populate();
 
 
 
+// let is_mobile = navigator.userAgent.indexOf('Mobile') !== -1;
+// if(is_mobile) $(".main-content").css('flex-direction', 'column');
+// if(is_mobile) $("#gameCanvas").css('width', window.innerWidth);
+// if(!is_mobile)$("canvas").css('height', window.innerHeight * 3/4);
 
 
 document.getElementById("reset").addEventListener("click", resetGame);
@@ -243,63 +247,95 @@ Ball.prototype.update = function(paddle1, paddle2, k) {
 	var top_y = this.y - 5;
 	var right_x = this.x + 5;
 	var bottom_y = this.y + 5;
-  if(top_y < (paddle1.y + paddle1.height) && bottom_y > paddle1.y && left_x < (paddle1.x + paddle1.width) && right_x > paddle1.x) {
-    // hit the player's paddle
-    this.y_speed = -this.y_speed;
-    this.x_speed = (paddle1.x_speed / 6);
-    this.y += -10 + this.y_speed;
-    this.x += this.x_speed;
-  }else {
+  // paddle2.push(paddle1);
+	// //cheacking left and right walls
+	// if(this.x - 5 < 0) { // hitting the left wall
+	// 	this.x = 5;
+	// 	this.x_speed = -this.x_speed;
+	// } else if(this.x + 5 > 400) { // hitting the right wall
+	// 	this.x = 395;
+	// 	this.x_speed = -this.x_speed;
+	// }
+
+	// if(this.y < 0 || this.y > 600) { // a point was scored
+	// 	if(this.y < 0) {
+	// 		score+= 100;
+	// 		this.x_speed = Math.abs(this.x_speed) + 0.5;
+	// 		this.y_speed = Math.abs(this.y_speed) + 0.5;
+	// 	}
+	// 	if(this.y > 600) {lives--;}
+	// 	document.getElementById('score2').innerHTML = score;
+	// 	document.getElementById('score2').innerHTML = lives;
+	// 	this.x_speed = 0;
+	// 	// this.y_speed = 3;
+	// 	this.x = 200;
+	// 	this.y = 300;
+	// }
+
+	// if(top_y > width - 100) {
+	    if(top_y < (paddle1.y + paddle1.height) && bottom_y > paddle1.y && left_x < (paddle1.x + paddle1.width) && right_x > paddle1.x) {
+	      // hit the player's paddle
+	      this.y_speed = -this.y_speed;
+	      this.x_speed = (paddle1.x_speed / 6);
+	      this.y += -10 + this.y_speed;
+	      this.x += this.x_speed;
+	    }else {
     //bounce off left and right edges of screen
-    if(this.x < 0 || this.x + this.radius > width){
-      this.x_speed *= -1;
-    }
-    if(this.y < 0){
-      this.y_speed *= -1;
-    }
-    if(this.y + this.radius > height){
-      balls.splice(k,1);
-      
-
-      document.getElementById('score1').innerHTML = level;
-    }
-    for(let i = 0; i < paddles.length; i++){
-      let remove = false;
-      let paddle = paddles[i];
-      if (this.x + this.radius + this.x_speed > paddle.x && 
-          this.x + this.x_speed < paddle.x + paddle.width && 
-          this.y + this.radius > paddle.y && 
-          this.y < paddle.y + paddle.height) {
+      if(this.x < 0 || this.x + this.radius > width){
         this.x_speed *= -1;
-        remove =  true;
       }
-      
-      
-      //if I keep moving in my current Y direction, will I collide with the center rectangle?
-      if (this.x + this.radius > paddle.x && 
-          this.x < paddle.x + paddle.width && 
-          this.y + this.radius + this.y_speed > paddle.y && 
-          this.y + this.y_speed < paddle.y + paddle.height) {
-            this.y_speed *= -1;
-            remove =  true;
+      if(this.y < 0){
+        this.y_speed *= -1;
+      }
+      if(this.y + this.radius > height){
+        balls.splice(k,1);
+        
 
+        document.getElementById('score1').innerHTML = level;
       }
-      //bounce off top and bottom edges of screen
-      if(remove){
-        paddles.splice(i,1);
-        i--;
-        score+= 100;
-        document.getElementById('score2').innerHTML = score;
-        addNewBall();
-        remove = false;
-      }
-          
-
+      for(let i = 0; i < paddles.length; i++){
+        let remove = false;
+        let paddle = paddles[i];
+        if (this.x + this.radius + this.x_speed > paddle.x && 
+            this.x + this.x_speed < paddle.x + paddle.width && 
+            this.y + this.radius > paddle.y && 
+            this.y < paddle.y + paddle.height) {
+          this.x_speed *= -1;
+          remove =  true;
+        }
+        
+        
+        //if I keep moving in my current Y direction, will I collide with the center rectangle?
+        if (this.x + this.radius > paddle.x && 
+            this.x < paddle.x + paddle.width && 
+            this.y + this.radius + this.y_speed > paddle.y && 
+            this.y + this.y_speed < paddle.y + paddle.height) {
+          this.y_speed *= -1;
+                  remove =  true;
 
         }
-    }
-    this.x += this.x_speed;
-    this.y += this.y_speed;
+        //bounce off top and bottom edges of screen
+        if(remove){
+          paddles.splice(i,1);
+          i--;
+          score+= 100;
+            document.getElementById('score2').innerHTML = score;
+            addNewBall();
+          remove = false;
+        }
+        
+
+
+      }}
+      this.x += this.x_speed;
+      this.y += this.y_speed;
+	    // if(top_y < (paddle2.y + paddle2.height) && bottom_y > paddle2.y && left_x < (paddle2.x + paddle2.width) && right_x > paddle2.x) {
+	    //   // hit the computer's paddle
+	    //   this.y_speed = -this.y_speed;
+	    //   this.x_speed += (paddle2.x_speed / 2);
+	    //   this.y += this.y_speed;
+	    // }
+  	// }
 };
 
 
